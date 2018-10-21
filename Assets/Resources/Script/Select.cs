@@ -44,9 +44,11 @@ public class Select : MonoBehaviour {
 				CubeSelected cubSel = new CubeSelected ();
 				cubSel.cube = hitInfo.transform.gameObject;
 				cubSel.hitDirection = utils.getHitDirection (hitInfo);
+                cubSel.SetColor();
 
-				//**********FoundCenter***********//
-				if (selected.Count == 0) {
+
+                //**********FoundCenter***********//
+                if (selected.Count == 0) {
 					
 					isX = true;
 					isY = true;
@@ -70,18 +72,22 @@ public class Select : MonoBehaviour {
 
 
 					c0 = (CubeSelected)selected [0];
-						
-				} else if (selected.Count == 1) {
+                    c0.ChangeColorTo(Color.green);
+
+                }
+                else if (selected.Count == 1) {
 
 					selected.Add (cubSel);
 
 					if (cubSel.cube.Equals (((CubeSelected)selected [0]).cube) || !cubSel.hitDirection.Equals (((CubeSelected)selected [0]).hitDirection) ) {
-						selected = new ArrayList ();
+                        ResetSelection();
 						return;//BUG ripetere selzione 0
 					}
 					c1 = cubSel;
+                    c1.SetColor();
+                    c1.ChangeColorTo(Color.green);
 
-					float c1xPos = cubSel.cube.transform.position.x;
+                    float c1xPos = cubSel.cube.transform.position.x;
 					float c1yPos = cubSel.cube.transform.position.y;
 					float c1zPos = cubSel.cube.transform.position.z;
 
@@ -98,7 +104,7 @@ public class Select : MonoBehaviour {
 						( !isX && Math.Round(c1zPos,0) != Math.Round(c0zPos,0) && Math.Round(c1yPos,0) != Math.Round(c0yPos,0) ) 					
 
 					) {
-						selected = new ArrayList ();
+                        ResetSelection();
 						return;//BUG ripetere selzione 0
 					}
 
@@ -255,12 +261,11 @@ public class Select : MonoBehaviour {
 							rotateCube.GetComponent <Rotate> ().axis = axis;
 							rotateCube.GetComponent <Rotate> ().canRotate = true;
 							canSelect = false;
-						}
+                        }
 					}
 
-					selected = new ArrayList ();
-					c0 = null;
-					c1 = null;
+       
+
 
 				}
 
@@ -268,6 +273,10 @@ public class Select : MonoBehaviour {
 
 		} else if (!canSelect && rotateCube != null) {
 			if (!rotateCube.GetComponent <Rotate> ().canRotate) {
+                ResetSelection();
+
+
+                Debug.Log("ROTATE END");
 				canSelect = true;
 				rotateCube = null;
 			}
@@ -277,10 +286,37 @@ public class Select : MonoBehaviour {
 	}
 
 
+    public void ResetSelection()
+    {
+        if (c0 != null) {
+            c0.ChangeColorTo(c0.color);
+            c0 = null;
+        }
+        if (c1 != null)
+        {
+            c1.ChangeColorTo(c1.color);
+            c1 = null;
+        }
+        selected = new ArrayList();
+    }
+
 	[Serializable]
 	public class CubeSelected {
 
 		public GameObject cube;
+        public Color color;
+        public void SetColor()
+        {
+            Renderer rend = cube.GetComponent<Renderer>();
+            color = rend.material.color;
+        }
+        public void ChangeColorTo(Color col)
+        {
+            if (cube != null && color != null) {
+                Renderer rend = cube.GetComponent<Renderer>();
+                rend.material.color = col;
+            }
+        }
 		public Utils.Direction hitDirection;
 	}
 }
